@@ -1,0 +1,57 @@
+-- Copyright(c) Live2D Inc. All rights reserved.
+--
+-- Use of this source code is governed by the Live2D Open Software license
+-- that can be found at http://live2d.com/eula/live2d-open-software-license-agreement_en.html.
+
+return {
+	HitAreaPrefix = "HitArea",
+	HitAreaHead = "Head",
+	HitAreaBody = "Body",
+	PartsIdCore = "Parts01Core",
+	PartsArmPrefix = "Parts01Arm_",
+	PartsArmLPrefix = "Parts01ArmL_",
+	PartsArmRPrefix = "Parts01ArmR_",
+
+	-- パラメータID
+	ParamAngleX = "ParamAngleX",
+	ParamAngleY = "ParamAngleY",
+	ParamAngleZ = "ParamAngleZ",
+	ParamEyeLOpen = "ParamEyeLOpen",
+	ParamEyeLSmile = "ParamEyeLSmile",
+	ParamEyeROpen = "ParamEyeROpen",
+	ParamEyeRSmile = "ParamEyeRSmile",
+	ParamEyeBallX = "ParamEyeBallX",
+	ParamEyeBallY = "ParamEyeBallY",
+	ParamEyeBallForm = "ParamEyeBallForm",
+	ParamBrowLY = "ParamBrowLY",
+	ParamBrowRY = "ParamBrowRY",
+	ParamBrowLX = "ParamBrowLX",
+	ParamBrowRX = "ParamBrowRX",
+	ParamBrowLAngle = "ParamBrowLAngle",
+	ParamBrowRAngle = "ParamBrowRAngle",
+	ParamBrowLForm = "ParamBrowLForm",
+	ParamBrowRForm = "ParamBrowRForm",
+	ParamMouthForm = "ParamMouthForm",
+	ParamMouthOpenY = "ParamMouthOpenY",
+	ParamCheek = "ParamCheek",
+	ParamBodyAngleX = "ParamBodyAngleX",
+	ParamBodyAngleY = "ParamBodyAngleY",
+	ParamBodyAngleZ = "ParamBodyAngleZ",
+	ParamBreath = "ParamBreath",
+	ParamArmLA = "ParamArmLA",
+	ParamArmRA = "ParamArmRA",
+	ParamArmLB = "ParamArmLB",
+	ParamArmRB = "ParamArmRB",
+	ParamHandL = "ParamHandL",
+	ParamHandR = "ParamHandR",
+	ParamHairFront = "ParamHairFront",
+	ParamHairSide = "ParamHairSide",
+	ParamHairBack = "ParamHairBack",
+	ParamHairFluffy = "ParamHairFluffy",
+	ParamShoulderY = "ParamShoulderY",
+	ParamBustX = "ParamBustX",
+	ParamBustY = "ParamBustY",
+	ParamBaseX = "ParamBaseX",
+	ParamBaseY = "ParamBaseY",
+	ParamNONE = "NONE:"
+}
