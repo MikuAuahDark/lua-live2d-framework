@@ -221,7 +221,7 @@ function LJBackend:loadModel(str)
 		modelMemory = model, -- Memory must be keep around or LuaJIT will free it
 		modelObject = modelObject,
 
-		-- Model sizes
+		-- Model sizes. Only these are public.
 		modelDimensions = KVec2ToNVec(tempCanvasInfo[0]),
 		modelOffset = KVec2ToNVec(tempCanvasInfo[1]),
 		modelDPI = tempCanvasInfo[2].x, -- only the first one is filled

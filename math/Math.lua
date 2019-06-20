@@ -33,6 +33,10 @@ function KMath.lerp(v1, v2, t)
 	return v1 * (1 - t) + v2 * t
 end
 
+function KMath.getEasingSine(v)
+	return v < 0 and 0 or (v > 1 and 1 or (0.5 - 0.5 * cos(v * pi)))
+end
+
 function KMath.directionToRadian(from, to)
 	return ((atan2(to.y, to.x) - atan2(from.y, from.x)) + pi) % (2 * pi) - pi
 end

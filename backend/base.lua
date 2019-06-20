@@ -61,6 +61,76 @@ function BackendBase:getModelPartIndex(model, name)
 	error("pure virtual method 'getModelPartIndex'")
 end
 
--- DO NOT ADD MORE, COPY FROM luajit.lua LATER
+function BackendBase:getModelPartOpacity(model, index)
+	error("pure virtual method 'getModelPartOpacity'")
+end
+
+function BackendBase:setModelPartOpacity(model, index, value)
+	error("pure virtual method 'setModelPartOpacity'")
+end
+
+function BackendBase:getModelParameterCount(model)
+	error("pure virtual method 'getModelParameterCount'")
+end
+
+function BackendBase:getModelParameterIndex(model, name)
+	error("pure virtual method 'getModelParameterIndex'")
+end
+
+function BackendBase:getModelParameterValue(model, index)
+	error("pure virtual method 'getModelParameterValue'")
+end
+
+function BackendBase:setModelParameterValue(model, index, value)
+	error("pure virtual method 'setModelParameterValue'")
+end
+
+function BackendBase:getModelDrawableNames(model)
+	error("pure virtual method 'getModelDrawableNames'")
+end
+
+function BackendBase:getModelDrawableRenderOrders(model)
+	error("pure virtual method 'getModelDrawableRenderOrders'")
+end
+
+function BackendBase:getModelDrawableTextureIndex(model)
+	error("pure virtual method 'getModelDrawableTextureIndex'")
+end
+
+function BackendBase:getModelDrawableVertexMapCount(model, index)
+	error("pure virtual method 'getModelDrawableVertexMapCount'")
+end
+
+function BackendBase:getModelDrawableVertexCount(model, index)
+	error("pure virtual method 'getModelDrawableVertexCount'")
+end
+
+function BackendBase:getModelDrawableVertex(model, index, cast)
+	error("pure virtual method 'getModelDrawableVertex'")
+end
+
+function BackendBase:getModelDrawableVertexMap(model, index)
+	error("pure virtual method 'getModelDrawableVertexMap'")
+end
+
+function BackendBase:getModelDrawableUV(model, index)
+	error("pure virtual method 'getModelDrawableUV'")
+end
+
+function BackendBase:getModelDrawableOpacity(model, index)
+	error("pure virtual method 'getModelDrawableOpacity'")
+end
+
+function BackendBase:getModelDrawableFlagsSet(model, index, flag)
+	error("pure virtual method 'getModelDrawableFlagsSet'")
+end
+
+function BackendBase:getModelDrawableDynFlagsSet(model, index, flag)
+	error("pure virtual method 'getModelDrawableDynFlagsSet'")
+end
+
+function BackendBase:getModelDrawableClips(model, index)
+	error("pure virtual method 'getModelDrawableClips'")
+end
 
 return BackendBase

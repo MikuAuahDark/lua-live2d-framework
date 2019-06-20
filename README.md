@@ -17,6 +17,8 @@ lua-live2d-framework:
 
 * Anything that uses numeric ID are assumed to use 1-based indexing.
 
+* There's no such thing of `Delete` function. Lua has automatic garbage collection.
+
 * `CubismModel::GetDrawableVertexUvs` is `Model:getDrawableVertexUVs` (notice the uppercase `V`)
 
 * `Model:getDrawableBlendMode` returns 2 strings, which maps to LOVE [BlendMode](https://love2d.org/wiki/BlendMode) and [BlendAlphaMode](https://love2d.org/wiki/BlendAlphaMode).
@@ -24,6 +26,8 @@ lua-live2d-framework:
 * `CubismModel::GetModel` equivalent does not exist.
 
 * `CubismMoc` equivalent class does not exist. Moc data string is passed directly to `Model` object constructor.
+
+* `MotionQueueEntry` doesn't accept additional value for `isFinished` and `isStarted` to set the value. Use `setFinished` and `setStarted` function respectively to set it.
 
 Third-party Libraries
 ---------------------
