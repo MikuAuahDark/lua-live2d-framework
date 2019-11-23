@@ -15,19 +15,21 @@ lua-live2d-framework:
 
 * `CubismId` and `CubismIdHandle` does not exist. The equivalent functionality is supported by Lua out-of-the-box.
 
-* Anything that uses numeric ID are assumed to use 1-based indexing.
+* Anything that uses numeric index ID are assumed to use 1-based indexing.
 
-* There's no such thing of `Delete` function. Lua has automatic garbage collection.
+* There's no `Delete` function. Lua has automatic garbage collection.
 
 * `CubismModel::GetDrawableVertexUvs` is `Model:getDrawableVertexUVs` (notice the uppercase `V`)
 
-* `Model:getDrawableBlendMode` returns 2 strings, which maps to LOVE [BlendMode](https://love2d.org/wiki/BlendMode) and [BlendAlphaMode](https://love2d.org/wiki/BlendAlphaMode).
+* `Model:getDrawableBlendMode` returns 2 strings, which maps to LOVE [BlendMode](https://love2d.org/wiki/BlendMode) and [BlendAlphaMode](https://love2d.org/wiki/BlendAlphaMode) respectively.
 
 * `CubismModel::GetModel` equivalent does not exist.
 
 * `CubismMoc` equivalent class does not exist. Moc data string is passed directly to `Model` object constructor.
 
 * `MotionQueueEntry` doesn't accept additional value for `isFinished` and `isStarted` to set the value. Use `setFinished` and `setStarted` function respectively to set it.
+
+* In `MotionJson` (`CubismMotionJson` equivalent), any `IsExist*` method is replaced by `has*` method instead.
 
 Third-party Libraries
 ---------------------
@@ -38,7 +40,7 @@ Here's list of 3rd-party libraries used:
 
 * [Luaoop](https://github.com/ImagicTheCat/Luaoop) - MIT license.
 
-* [nvec](https://github.com/MikuAuahDark/livesim2/blob/48507c2/libs/nvec.lua) - zLib license.
+* [nvec](https://github.com/MikuAuahDark/NPad93/blob/master/nvec.lua) - zLib license.
 
 License
 -------

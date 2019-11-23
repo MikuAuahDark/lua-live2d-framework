@@ -38,6 +38,7 @@ function MotionJson:__construct(jsondata)
 	self.json = JSON:decode(jsondata)
 	self.meta = self.json[Meta] or {}
 	self.curves = self.json[Curves] or {}
+	self.udata = self.json[UserData] or {}
 end
 
 function MotionJson:getMotionDuration()
@@ -98,6 +99,39 @@ end
 function MotionJson:hasMotionCurveFadeOutTime(index)
 	local p = self.curves[index]
 	return not(not(p and p[FadeOutTime]))
+end
+
+function MotionJson:getMotionCurveFadeInTime(index)
+	local p = self.curves[index]
+	return tonumber(p and p[FadeOutTime]) or 1
+end
+
+function MotionJson:getMotionCurveSegmentCount(index)
+	local p = self.curves[index]
+	return p and p[Segments] and #p[Segments] or 0
+end
+
+function MotionJson:getMotionCurveSegment(index, sindex)
+	local p = self.curves[index]
+	return p and p[Segments] and tonumber(p[Segments][sindex]) or 0
+end
+
+function MotionJson:getEventCount()
+	return tonumber(self.meta[UserDataCount]) or 0
+end
+
+function MotionJson:getTotalEventValueSize()
+	return tonumber(self.meta[TotalUserDataSize]) or 0
+end
+
+function MotionJson:getEventTime(index)
+	local p = self.udata[index]
+	return p and tonumber(p[Time]) or 0
+end
+
+function MotionJson:getEventValue(index)
+	local p = self.udata[index]
+	return p and tostring(p[Value] or "") or ""
 end
 
 return MotionJson
