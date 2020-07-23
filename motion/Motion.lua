@@ -1,8 +1,3 @@
--- Copyright(c) Live2D Inc. All rights reserved.
---
--- Use of this source code is governed by the Live2D Open Software license
--- that can be found at http://live2d.com/eula/live2d-open-software-license-agreement_en.html.
-
 local path = (...):sub(1, #(...) - #(".motion.ExpressionMotion"))
 local Luaoop = require(path..".3p.Luaoop")
 local AMotion = require(path..".motion.AMotion")
@@ -75,7 +70,7 @@ local TargetNameModel = "Model"
 local TargetNameParameter = "Parameter"
 local TargetNamePartOpacity = "PartOpacity"
 
-function Motion:__construct(jsondata)
+function Motion:__construct()
 	AMotion.__construct(self)
 	self.sourceFrameRate = 30
 	self.loopDurationSeconds = -1
@@ -84,7 +79,10 @@ function Motion:__construct(jsondata)
 	self.lastWeight = 0
 	self.modelCurveIdEyeBlink = nil
 	self.modelCurveIdLipSync = nil
+end
 
+function Motion.create(jsondata)
+	local motion = Motion()
 	local json = MotionJson(jsondata)
 	local motionData = {
 		duration = json:getMotionDuration(),
@@ -95,9 +93,9 @@ function Motion:__construct(jsondata)
 		points = {},
 		events = {}
 	}
-	self.motionData = motionData
-	self.sourceFrameRate = motionData.fps
-	self.loopDurationSeconds = motionData.duration
+	motion.motionData = motionData
+	motion.sourceFrameRate = motionData.fps
+	motion.loopDurationSeconds = motionData.duration
 
 	-- pre-allocate stuff
 	-- curves
@@ -136,16 +134,16 @@ function Motion:__construct(jsondata)
 
 	if json:hasMotionFadeInTime() then
 		local v = json:getMotionFadeInTime()
-		self.fadeInSeconds = v < 0 and 1 or v
+		motion.fadeInSeconds = v < 0 and 1 or v
 	else
-		self.fadeInSeconds = 1
+		motion.fadeInSeconds = 1
 	end
 
 	if json:hasMotionFadeOutTime() then
 		local v = json:getMotionFadeOutTime()
-		self.fadeOutSeconds = v < 0 and 1 or v
+		motion.fadeOutSeconds = v < 0 and 1 or v
 	else
-		self.fadeOutSeconds = 1
+		motion.fadeOutSeconds = 1
 	end
 
 	local totalPointCount = 0

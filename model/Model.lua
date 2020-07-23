@@ -1,8 +1,3 @@
--- Copyright(c) Live2D Inc. All rights reserved.
---
--- Use of this source code is governed by the Live2D Open Software license
--- that can be found at http://live2d.com/eula/live2d-open-software-license-agreement_en.html.
-
 local path = (...):sub(1, #(...) - #(".model.Model"))
 local Luaoop = require(path..".3p.Luaoop")
 local Backend = require(path..".backend")
