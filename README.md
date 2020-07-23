@@ -1,9 +1,9 @@
 lua-live2d-framework
 ====================
 
-[CubismNativeFramework](https://github.com/Live2D/CubismNativeFramework) but in Lua.
+[CubismNativeFramework](https://github.com/Live2D/CubismNativeFramework/tree/934c194f1eb29cdc7ff39dc4836bb79b076e5c24) but in Lua.
 
-Provides both lua-live2d and [Live2LOVE](https://github.com/MikuAuahDark/Live2LOVE)-compatible API.
+Provides both CubismNativeFramework-like API and [Live2LOVE](https://github.com/MikuAuahDark/Live2LOVE)-compatible API.
 
 Differences
 -----------
