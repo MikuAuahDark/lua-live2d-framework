@@ -81,6 +81,8 @@ function AMotion:getWeight()
 	return self.weight
 end
 
+-- luacheck: push no unused args
+
 function AMotion:getDuration()
 	return -1
 end
@@ -89,10 +91,14 @@ function AMotion:getLoopDuration()
 	return -1
 end
 
+-- luacheck: pop
+
 ---@param t number
 function AMotion:setOffsetTime(t)
 	self.offsetSeconds = t
 end
+
+-- luacheck: push no unused args
 
 ---@param beforeCheckTimeSeconds number
 ---@param motionTimeSeconds number
@@ -107,5 +113,7 @@ end
 function AMotion:_doUpdateParameters(model, userTimeSeconds, weight, motionQueueEntry)
 	error("pure virtual method '_doUpdateParameters'")
 end
+
+-- luacheck: pop
 
 return AMotion

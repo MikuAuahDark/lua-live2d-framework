@@ -50,7 +50,11 @@ function MotionQueueManager:doUpdateMotion(model, userTimeSeconds)
 			motion:updateParameters(model, mqe, userTimeSeconds)
 			updated = true
 
-			local firedList = motion:getFiredEvents(mqe:getLastCheckedEventTime() - mqe:getStartTime(), userTimeSeconds - mqe:getStartTime())
+			local firedList = motion:getFiredEvents(
+				mqe:getLastCheckedEventTime() - mqe:getStartTime(),
+				userTimeSeconds - mqe:getStartTime()
+			)
+
 			for _, f in ipairs(firedList) do
 				self.eventCallback(self, f, self.eventCustomData)
 			end
