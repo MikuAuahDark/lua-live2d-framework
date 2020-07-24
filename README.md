@@ -13,7 +13,7 @@ lua-live2d-framework:
 
 * lua-live2d-framework uses `lowerCamelCase` naming while CubismNativeFramework uses `UpperCamelCase`.
 
-* `CubismId` and `CubismIdHandle` does not exist. The equivalent functionality is supported by Lua out-of-the-box.
+* `CubismId` and `CubismIdHandle` does not exist. Lua string is used instead.
 
 * Anything that uses numeric index ID are assumed to use 1-based indexing.
 
@@ -27,9 +27,9 @@ lua-live2d-framework:
 
 * `CubismMoc` equivalent class does not exist. Moc data string is passed directly to `Model` object constructor.
 
-* `MotionQueueEntry` doesn't accept additional value for `isFinished` and `isStarted` to set the value. Use `setFinished` and `setStarted` function respectively to set it.
-
 * In `MotionJson` (`CubismMotionJson` equivalent), any `IsExist*` method is replaced by `has*` method instead.
+
+* All `is*` or `has*` method doesn't accept additional value to set the value. Use `set*` function respectively to set it.
 
 Third-party Libraries
 ---------------------
