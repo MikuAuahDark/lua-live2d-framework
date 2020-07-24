@@ -20,27 +20,41 @@
 
 local path = (...):sub(1, #(...) - #(".math.Math"))
 local nvec = require(path..".3p.nvec")
+
+---@class L2DF.Math
 local KMath = {}
 
 local min, max, atan2, sin, cos = math.min, math.max, (math.atan2 or math.atan), math.sin, math.cos
 local pi = math.pi
 
+---@param v number
+---@param a number
+---@param b number
+---@return number
 function KMath.range(v, a, b)
 	return min(max(v, a), b)
 end
 
+---@param t number
 function KMath.lerp(v1, v2, t)
 	return v1 * (1 - t) + v2 * t
 end
 
+---@param v number
 function KMath.getEasingSine(v)
 	return v < 0 and 0 or (v > 1 and 1 or (0.5 - 0.5 * cos(v * pi)))
 end
 
+---@param from NVec
+---@param to NVec
+---@return number
 function KMath.directionToRadian(from, to)
 	return ((atan2(to.y, to.x) - atan2(from.y, from.x)) + pi) % (2 * pi) - pi
 end
 
+---@param from NVec
+---@param to NVec
+---@return number
 function KMath.directionToDegrees(from, to)
 	local deg = KMath.directionToRadian(from, to) * 180 / pi
 
@@ -51,6 +65,8 @@ function KMath.directionToDegrees(from, to)
 	end
 end
 
+---@param r number
+---@return NVec
 function KMath.radianToDirection(r)
 	return nvec(sin(r), cos(r))
 end

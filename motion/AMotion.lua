@@ -1,8 +1,14 @@
 local path = (...):sub(1, #(...) - #(".motion.AMotion"))
 local Luaoop = require(path..".3p.Luaoop")
-local KMath = require(path..".math.Math")
+
+local KMath = require(path..".math.Math") ---@type L2DF.Math
 
 ---@class L2DF.AMotion
+---@field protected fadeInSeconds number
+---@field protected fadeOutSeconds number
+---@field protected weight number
+---@field protected offsetSeconds number
+---@field protected firedEventValues string[]
 local AMotion = Luaoop.class("L2DF.AMotion")
 
 function AMotion:__construct()
@@ -13,6 +19,9 @@ function AMotion:__construct()
 	self.firedEventValues = {}
 end
 
+---@param model L2DF.Model
+---@param motionQueueEntry L2DF.MotionQueueEntry
+---@param userTimeSeconds number
 function AMotion:updateParameters(model, motionQueueEntry, userTimeSeconds)
 	if not(motionQueueEntry:isAvailable()) or motionQueueEntry:isFinished() then
 		return
@@ -45,10 +54,12 @@ function AMotion:updateParameters(model, motionQueueEntry, userTimeSeconds)
 	end
 end
 
+---@param t number
 function AMotion:setFadeInTime(t)
 	self.fadeInSeconds = t
 end
 
+---@param t number
 function AMotion:setFadeOutTime(t)
 	self.fadeOutSeconds = t
 end
@@ -61,6 +72,7 @@ function AMotion:getFadeOutTime()
 	return self.fadeOutSeconds
 end
 
+---@param w number
 function AMotion:setWeight(w)
 	self.weight = w
 end
@@ -77,14 +89,21 @@ function AMotion:getLoopDuration()
 	return -1
 end
 
+---@param t number
 function AMotion:setOffsetTime(t)
 	self.offsetSeconds = t
 end
 
+---@param beforeCheckTimeSeconds number
+---@param motionTimeSeconds number
 function AMotion:getFiredEvents(beforeCheckTimeSeconds, motionTimeSeconds)
 	return self.firedEventValues
 end
 
+---@param model L2DF.Model
+---@param userTimeSeconds number
+---@param weight number
+---@param motionQueueEntry L2DF.MotionQueueEntry
 function AMotion:_doUpdateParameters(model, userTimeSeconds, weight, motionQueueEntry)
 	error("pure virtual method '_doUpdateParameters'")
 end

@@ -1,8 +1,10 @@
 local path = (...):sub(1, #(...) - #(".motion.ExpressionMotion"))
 local JSON = require(path..".3p.JSON").new() -- new instance
 local Luaoop = require(path..".3p.Luaoop")
+
 local AMotion = require(path..".motion.AMotion")
 
+---@class L2DF.ExpressionMotion: L2DF.AMotion
 local ExpressionMotion = Luaoop.class("L2DF.ExpressionMotion", AMotion)
 
 -- exp3.jsonのキーとデフォルト値
@@ -52,14 +54,18 @@ function ExpressionMotion:__construct(jsondata)
 end
 
 -- Backward compatibility
+---@param jsondata string
+---@return L2DF.ExpressionMotion
 function ExpressionMotion.create(jsondata)
 	return ExpressionMotion(jsondata)
 end
 
+---@param model L2DF.Model
+---@param userTimeSeconds number
+---@param weight number
+---@param motionQueueEntry L2DF.MotionQueueEntry
 function ExpressionMotion:_doUpdateParameters(model, userTimeSeconds, weight, motionQueueEntry)
-	for i = 1, #self.parameters do
-		local parameter = self.parameters[i]
-
+	for _, parameter in ipairs(self.parameters) do
 		if parameter.blend == BlendValueAdd then
 			model:addParameterValue(parameter.id, parameter.value, weight)
 		elseif parameter.blend == BlendValueMultiply then

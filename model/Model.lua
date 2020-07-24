@@ -3,36 +3,42 @@ local Luaoop = require(path..".3p.Luaoop")
 local Backend = require(path..".backend")
 local KMath = require(path..".math.Math")
 
+---@class L2DF.Model
 local Model = Luaoop.class("L2DF.Model")
 
 local type = type
 
 function Model:__construct(str)
-	self.model = Backend:loadModel(str)
+	self.model = Backend:loadModel(str) ---@type userdata
 
 	-- Parts
-	self.partCount = Backend:getModelPartCount(self.model)
-	self.notExistPartId = {}
-	self.notExistPartOpacity = {}
+	self.partCount = Backend:getModelPartCount(self.model) ---@type number
+	self.notExistPartId = {} ---@type table<string, number>
+	self.notExistPartOpacities = {} ---@type table<number, number>
 
 	-- Parameter
-	self.paramCount = Backend:getModelParameterCount(self.model)
+	self.paramCount = Backend:getModelParameterCount(self.model) ---@type number
 	self.notExistParam = {}
 	self.savedParameters = {}
 end
 
+---@return void
 function Model:update()
 	return Backend:updateModel(self.model)
 end
 
+---@return number
 function Model:getCanvasWidth()
 	return (Backend:getModelDimensions(self.model))
 end
 
+---@return number
 function Model:getCanvasHeight()
 	return select(2, Backend:getModelDimensions(self.model))
 end
 
+---@param name string
+---@return number
 function Model:getPartIndex(name)
 	local index = Backend:getModelPartIndex(self.model, name)
 
@@ -46,7 +52,7 @@ function Model:getPartIndex(name)
 		local notExistLength = #self.notExistPartId
 		index = notExistLength + self.partCount + 1
 		self.notExistPartId[notExistLength + 1] = name
-		self.notExistPartOpacity[notExistLength + 1] = 0
+		self.notExistPartOpacities[notExistLength + 1] = 0
 	end
 
 	return index
@@ -56,13 +62,14 @@ function Model:getPartCount()
 	return self.partCount
 end
 
+---@param index number|string
 function Model:getPartOpacity(index)
 	local t = type(index)
 
 	if t == "number" then
 		if index > self.partCount then
 			if self.notExistPartId[index - self.partCount] then
-				return self.notExistPartOpacity[index - self.partCount]
+				return self.notExistPartOpacities[index - self.partCount]
 			else
 				return nil
 			end
@@ -74,13 +81,15 @@ function Model:getPartOpacity(index)
 	end
 end
 
+---@param index number|string
+---@param value number
 function Model:setPartOpacity(index, value)
 	local t = type(index)
 
 	if t == "number" then
 		if index > self.partCount then
 			if self.notExistPartId[index - self.partCount] then
-				self.notExistPartOpacity[index - self.partCount] = value
+				self.notExistPartOpacities[index - self.partCount] = value
 			end
 		else
 			Backend:setModelPartOpacity(self.model, index, value)
@@ -94,6 +103,8 @@ function Model:getParameterCount()
 	return self.paramCount
 end
 
+---@param name string
+---@return number
 function Model:getParameterIndex(name)
 	local index = Backend:getModelParameterIndex(self.model, name)
 
@@ -125,6 +136,8 @@ function Model:getParameterIndex(name)
 	return index
 end
 
+---@param index number|string
+---@return number
 function Model:getParameterMaximumValue(index)
 	local t = type(index)
 
@@ -143,6 +156,8 @@ function Model:getParameterMaximumValue(index)
 	end
 end
 
+---@param index number|string
+---@return number
 function Model:getParameterMinimumValue(index)
 	local t = type(index)
 
@@ -161,6 +176,8 @@ function Model:getParameterMinimumValue(index)
 	end
 end
 
+---@param index number|string
+---@return number
 function Model:getParameterDefaultValue(index)
 	local t = type(index)
 
@@ -179,6 +196,8 @@ function Model:getParameterDefaultValue(index)
 	end
 end
 
+---@param index number|string
+---@return number
 function Model:getParameterValue(index)
 	local t = type(index)
 
@@ -197,6 +216,9 @@ function Model:getParameterValue(index)
 	end
 end
 
+---@param index number|string
+---@param value number
+---@param weight number
 function Model:setParameterValue(index, value, weight)
 	weight = weight or 1
 	local t = type(index)
@@ -220,16 +242,24 @@ function Model:setParameterValue(index, value, weight)
 	end
 end
 
+---@param index number|string
+---@param value number
+---@param weight number
 function Model:addParameterValue(index, value, weight)
 	weight = weight or 1
 	return self:setParameterValue(index, self:getParameterValue(index) + value * weight)
 end
 
+---@param index number|string
+---@param value number
+---@param weight number
 function Model:multiplyParameterValue(index, value, weight)
 	weight = weight or 1
 	return self:setParameterValue(index, self:getParameterValue(index) * (1 + (value - 1) * weight))
 end
 
+---@param id string
+---@return number
 function Model:getDrawableIndex(id)
 	local names = Backend:getModelDrawableNames(self.model)
 
@@ -246,6 +276,8 @@ function Model:getDrawableCount()
 	return #Backend:getModelDrawableNames(self.model)
 end
 
+---@param index number
+---@return string
 function Model:getDrawableId(index)
 	local names = Backend:getModelDrawableNames(self.model)
 	assert(index > 0 and index <= #names, "index out of range")
@@ -294,6 +326,8 @@ function Model:getDrawableCulling(index)
 	return Backend:getModelDrawableFlagsSet(self.model, index, 0x4)
 end
 
+---@param index number
+---@return "'add' | 'multiply' | 'alpha'", "'alphamultiply' | 'premultiplied'"
 function Model:getDrawableBlendMode(index)
 	if Backend:getModelDrawableFlagsSet(self.model, index, 0x1) then
 		return "add", "alphamultiply"
