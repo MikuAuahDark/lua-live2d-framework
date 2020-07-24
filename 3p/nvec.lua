@@ -1,29 +1,30 @@
 -- hump.vector compatible FFI-accelerated 2D vector library
 -- Part of Live Simulator: 2, can be used as standalone library
 --[[---------------------------------------------------------------------------
--- Copyright (c) 2040 Dark Energy Processor
+-- Copyright (c) 2020 Miku AuahDark
 --
--- This software is provided 'as-is', without any express or implied
--- warranty. In no event will the authors be held liable for any damages
--- arising from the use of this software.
+-- Permission is hereby granted, free of charge, to any person obtaining a
+-- copy of this software and associated documentation files (the "Software"),
+-- to deal in the Software without restriction, including without limitation
+-- the rights to use, copy, modify, merge, publish, distribute, sublicense,
+-- and/or sell copies of the Software, and to permit persons to whom the
+-- Software is furnished to do so, subject to the following conditions:
 --
--- Permission is granted to anyone to use this software for any purpose,
--- including commercial applications, and to alter it and redistribute it
--- freely, subject to the following restrictions:
+-- The above copyright notice and this permission notice shall be included in
+-- all copies or substantial portions of the Software.
 --
--- 1. The origin of this software must not be misrepresented; you must not
---    claim that you wrote the original software. If you use this software
---    in a product, an acknowledgment in the product documentation would be
---    appreciated but is not required.
--- 2. Altered source versions must be plainly marked as such, and must not
---    be misrepresented as being the original software.
--- 3. This notice may not be removed or altered from any source
---    distribution.
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+-- OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+-- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+-- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+-- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+-- FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+-- DEALINGS IN THE SOFTWARE.
 --]]---------------------------------------------------------------------------
 
 local type = type
 local sin, cos, atan2 = math.sin, math.cos, (math.atan2 or math.atan)
-local sqrt, rnd = math.sqrt, math.random
+local sqrt, rnd, pi = math.sqrt, math.random, math.pi
 local ffi = nil
 
 local nvec, nvec_t = {}, nil
@@ -62,7 +63,7 @@ function nvec.randomDirection(min, max)
 	max = max or min
 	assert(max > 0, "max length must be greater than zero")
 	assert(max >= min, "max length must be greater than or equal to min length")
-	return nvec.fromPolar(rnd() * 2*math.pi, rnd() * (max - min) + min)
+	return nvec.fromPolar(rnd() * 2*pi, rnd() * (max - min) + min)
 end
 
 function nvec:clone()
@@ -212,7 +213,7 @@ end
 function nvec:trim(maxLen)
 	return self:clone():trimInplace(maxLen)
 end
-nvec.trimmed = nvec.trin
+nvec.trimmed = nvec.trim
 
 function nvec:angleTo(other)
 	if other then
