@@ -61,10 +61,8 @@ function ExpressionMotion.create(jsondata)
 end
 
 ---@param model L2DF.Model
----@param userTimeSeconds number
 ---@param weight number
----@param motionQueueEntry L2DF.MotionQueueEntry
-function ExpressionMotion:_doUpdateParameters(model, userTimeSeconds, weight, motionQueueEntry)
+function ExpressionMotion:_doUpdateParameters(model, _, weight, _)
 	for _, parameter in ipairs(self.parameters) do
 		if parameter.blend == BlendValueAdd then
 			model:addParameterValue(parameter.id, parameter.value, weight)

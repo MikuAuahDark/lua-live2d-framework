@@ -11,8 +11,6 @@ local MotionJson = require(path..".motion.MotionJson")
 local MotionPoint = require(path..".motion.MotionPoint")
 local MotionSegment = require(path..".motion.MotionSegment")
 
-local Backend = require(path..".backend")
-
 local max = math.max
 
 ---@param a L2DF.MotionPoint
@@ -109,7 +107,6 @@ local EffectNameLipSync  = "LipSync"
 local TargetNameModel = "Model"
 local TargetNameParameter = "Parameter"
 local TargetNamePartOpacity = "PartOpacity"
-local MaxTargetSize = 64
 
 function Motion:__construct()
 	AMotion.__construct(self)

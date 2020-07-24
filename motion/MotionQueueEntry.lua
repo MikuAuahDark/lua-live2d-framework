@@ -1,4 +1,4 @@
-local path = (...):sub(1, #(...) - #(".motion.Motion"))
+local path = (...):sub(1, #(...) - #(".motion.MotionQueueEntry"))
 local Luaoop = require(path..".3p.Luaoop")
 
 ---@class L2DF.MotionQueueEntry
@@ -25,7 +25,6 @@ function MotionQueueEntry:__construct()
 	self.stateTimeSeconds = 0
 	self.stateWeight = 0
 	self.lastEventCheckSeconds = 0
-	self.motionQueueEntryHandle = self
 end
 
 ---@param fadeOutSeconds number
