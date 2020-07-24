@@ -2,6 +2,7 @@ local path = (...):sub(1, #(...) - #(".motion.AMotion"))
 local Luaoop = require(path..".3p.Luaoop")
 local KMath = require(path..".math.Math")
 
+---@class L2DF.AMotion
 local AMotion = Luaoop.class("L2DF.AMotion")
 
 function AMotion:__construct()

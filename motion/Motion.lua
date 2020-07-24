@@ -1,7 +1,16 @@
-local path = (...):sub(1, #(...) - #(".motion.ExpressionMotion"))
+local path = (...):sub(1, #(...) - #(".motion.Motion"))
 local Luaoop = require(path..".3p.Luaoop")
+
+local KMath = require(path..".math.Math")
+
 local AMotion = require(path..".motion.AMotion")
+local MotionCurve = require(path..".motion.MotionCurve")
+local MotionData = require(path..".motion.MotionData")
+local MotionEvent = require(path..".motion.MotionEvent")
 local MotionJson = require(path..".motion.MotionJson")
+local MotionPoint = require(path..".motion.MotionPoint")
+local MotionSegment = require(path..".motion.MotionSegment")
+
 local Backend = require(path..".backend")
 
 local max = math.max
@@ -62,6 +71,7 @@ local function evaluateCurve(motionData, index, time)
 	return segment.evaluate(motionData.points[segment.basePointIndex], time)
 end
 
+---@class L2DF.Motion:L2DF.AMotion
 local Motion = Luaoop.class("L2DF.Motion", AMotion)
 
 local EffectNameEyeBlink = "EyeBlink"
@@ -69,6 +79,7 @@ local EffectNameLipSync  = "LipSync"
 local TargetNameModel = "Model"
 local TargetNameParameter = "Parameter"
 local TargetNamePartOpacity = "PartOpacity"
+local MaxTargetSize = 64
 
 function Motion:__construct()
 	AMotion.__construct(self)
@@ -77,59 +88,48 @@ function Motion:__construct()
 	self.isLoop = false
 	self.isLoopFadeIn = true
 	self.lastWeight = 0
+	self.motionData = nil
+	self.eyeBlinkParameterIds = {}
+	self.lipSyncParameterIds = {}
 	self.modelCurveIdEyeBlink = nil
 	self.modelCurveIdLipSync = nil
 end
 
 function Motion.create(jsondata)
 	local motion = Motion()
+
+	-- Parse motion
 	local json = MotionJson(jsondata)
-	local motionData = {
-		duration = json:getMotionDuration(),
-		loop = json:isMotionLoop(),
-		fps = json:getMotionFps(),
-		curves = {},
-		segments = {},
-		points = {},
-		events = {}
-	}
-	motion.motionData = motionData
+
+	local motionData = MotionData()
+	motionData.duration = json:getMotionDuration()
+	motionData.loop = json:isMotionLoop()
+	motionData.fps = json:getMotionFps()
+
+	motion.motionData = MotionData()
 	motion.sourceFrameRate = motionData.fps
 	motion.loopDurationSeconds = motionData.duration
 
 	-- pre-allocate stuff
+
 	-- curves
 	for i = 1, json:getMotionCurveCount() do
-		motionData.curves[i] = {
-			type = nil,
-			id = nil,
-			segmentCount = 0,
-			baseSegmentIndex = 0,
-			fadeInTime = 1,
-			fadeOutTime = 1
-		}
+		motionData.curves[i] = MotionCurve()
 	end
+
 	-- segments
 	for i = 1, json:getMotionTotalSegmentCount() do
-		motionData.segments[i] = {
-			evaluate = nil,
-			basePointIndex = 0,
-			type = nil
-		}
+		motionData.segments[i] = MotionSegment()
 	end
+
 	-- points
 	for i = 1, json:getMotionTotalPointCount() do
-		motionData.points[i] = {
-			time = 0,
-			value = 0
-		}
+		motionData.points[i] = MotionPoint()
 	end
+
 	-- events
 	for i = 1, json:getEventCount() do
-		motionData.events[i] = {
-			fireTime = 0,
-			value = nil
-		}
+		motionData.events[i] = MotionEvent()
 	end
 
 	if json:hasMotionFadeInTime() then
@@ -158,7 +158,7 @@ function Motion.create(jsondata)
 		elseif target == TargetNameParameter then
 			curve.type = "parameter"
 		elseif target == TargetNamePartOpacity then
-			curve.type = "part opacity"
+			curve.type = "partopacity"
 		end
 
 		curve.id = json:getMotionCurveId(i)
@@ -232,10 +232,96 @@ function Motion.create(jsondata)
         motionData.events[i].fireTime = json:getEventTime(i)
         motionData.events[i].value = json:getEventValue(i)
 	end
+
+	return motion
 end
 
 function Motion:getDuration()
 	return self.isLoop and -1 or self.loopDurationSeconds
+end
+
+function Motion:_doUpdateParameters(model, userTimeSeconds, weight, motionQueueEntry)
+	self.modelCurveIdEyeBlink = self.modelCurveIdEyeBlink or EffectNameEyeBlink
+	self.modelCurveIdLipSync = self.modelCurveIdLipSync or EffectNameLipSync
+
+	local timeOffsetSeconds = math.max(userTimeSeconds - motionQueueEntry:getStartTime(), 0)
+	local lipSyncValue, eyeBlinkValue = math.huge, math.huge
+	local lipSyncFlags, eyeBlinkFlags = {}, {}
+
+	--[[
+	if #self.eyeBlinkParameterIds > MaxTargetSize then
+		-- log("too many eye blink targets "..#self.eyeBlinkParameterIds)
+	end
+
+	if #self.lipSyncParameterIds > MaxTargetSize then
+		-- log("too many eye blink targets "..#self.eyeBlinkParameterIds)
+	end
+	]]
+
+	local tmpFadeIn = self.fadeInSeconds < 0 and 1 or
+		KMath.getEasingSine((userTimeSeconds - motionQueueEntry:getFadeInStartTime()) / self.fadeInSeconds)
+	local tmpFadeOut = (self.fadeOutSeconds < 0 or motionQueueEntry:getEndTime() < 0) and 1 or
+		KMath.getEasingSine((motionQueueEntry:getEndTime() - userTimeSeconds) / self.fadeOutSeconds)
+
+	local time = timeOffsetSeconds
+
+	-- 'Repeat' time as necessary.
+	if self.isLoop then
+		time = time % self.motionData.duration
+	end
+
+	local curves = self.motionData.curves
+	local parameterMotionCurveCount = 0
+
+	-- Evaluate curves.
+	for c, curve in ipairs(curves) do
+		if curve.type == "model" then
+			-- Evaluate curve and call handler.
+			local value = evaluateCurve(self.motionData, c, time)
+
+			if curve.id == self.modelCurveIdEyeBlink then
+				eyeBlinkValue = value
+			elseif curve.id == self.modelCurveIdLipSync then
+				lipSyncValue = value
+			end
+		elseif curve.type == "parameter" then
+			parameterMotionCurveCount = parameterMotionCurveCount + 1
+
+			-- Find parameter index.
+			local parameterIndex = model:getParameterIndex(curve.id)
+
+			if parameterIndex >= 0 then
+				local sourceValue = model:getParameterValue(parameterIndex)
+				local value = evaluateCurve(self.motionData, c, time)
+
+				if eyeBlinkValue ~= math.huge then
+					for i, eyeParam in ipairs(self.eyeBlinkParameterIds) do
+						if eyeParam == curve.id then
+							value = value * eyeBlinkValue
+							eyeBlinkFlags[#eyeBlinkFlags + 1] = i
+							break
+						end
+					end
+				end
+
+				if lipSyncValue ~= math.huge then
+					for i, lipSync in ipairs(self.lipSyncParameterIds) do
+						if lipSync == curve.id then
+							value = value + lipSyncValue
+							lipSyncFlags[#lipSyncFlags + 1] = i
+							break
+						end
+					end
+				end
+
+				local v = 0
+				-- TODO complete
+			end
+		else
+			break
+		end
+	end
+
 end
 
 return Motion
