@@ -1,7 +1,7 @@
 local path = (...):sub(1, #(...) - #(".motion.Motion"))
 local Luaoop = require(path..".3p.Luaoop")
 
-local KMath = require(path..".math.Math")
+local KMath = require(path..".math.Math") ---@type L2DF.Math
 
 local AMotion = require(path..".motion.AMotion")
 local MotionCurve = require(path..".motion.MotionCurve")
@@ -15,37 +15,57 @@ local Backend = require(path..".backend")
 
 local max = math.max
 
+---@param a L2DF.MotionPoint
+---@param b L2DF.MotionPoint
+---@param t number
 local function lerpPoints(a, b, t)
-	return {
-		time = a.time + (b.time - a.time) * t,
-		value = a.value + (b.value - a.value) * t,
-	}
+	local l = MotionPoint() ---@type L2DF.MotionPoint
+	l.time = a.time + (b.time - a.time) * t
+	l.value = a.value + (b.value - a.value) * t
+	return l
 end
 
-local function linearEvaluate(points, time)
-	local t = max((time - points[1].time) / (points[2].time - points[1].time), 0)
-	return points[1].value + (points[2].value - points[1].value) * t
+---@param points L2DF.MotionPoint[]
+---@param time number
+---@param index number
+---@return number
+local function linearEvaluate(points, time, index)
+	local t = max((time - points[index].time) / (points[index + 1].time - points[index].time), 0)
+	return points[index].value + (points[index + 1].value - points[index].value) * t
 end
 
-local function bezierEvaluate(points, time)
-	local t = max((time - points[1].time) / (points[4].time - points[1].time), 0)
-	local p23 = lerpPoints(points[2], points[3], t)
+---@param points L2DF.MotionPoint[]
+---@param time number
+---@param index number
+---@return number
+local function bezierEvaluate(points, time, index)
+	local t = max((time - points[index].time) / (points[4].time - points[index].time), 0)
+	local p23 = lerpPoints(points[index + 1], points[index + 2], t)
 
 	return lerpPoints(
-		lerpPoints(lerpPoints(points[1], points[2], t), p23, t),
-		lerpPoints(p23, lerpPoints(points[3], points[4], t), t),
+		lerpPoints(lerpPoints(points[index], points[index + 1], t), p23, t),
+		lerpPoints(p23, lerpPoints(points[index + 2], points[index + 3], t), t),
 		t
 	)
 end
 
-local function steppedEvaluate(points)
-	return points[1].value
+---@param points L2DF.MotionPoint[]
+---@param index number
+---@return number
+local function steppedEvaluate(points, _, index)
+	return points[index].value
 end
 
-local function inverseSteppedEvaluate(points)
-	return points[2].value
+---@param points L2DF.MotionPoint[]
+---@param index number
+---@return number
+local function inverseSteppedEvaluate(points, _, index)
+	return points[index + 1].value
 end
 
+---@param motionData L2DF.MotionData
+---@param index number
+---@param time number
 local function evaluateCurve(motionData, index, time)
 	local curve = motionData.curves[index]
 	local target = -1
@@ -68,10 +88,20 @@ local function evaluateCurve(motionData, index, time)
 	end
 
 	local segment = motionData.segments[target]
-	return segment.evaluate(motionData.points[segment.basePointIndex], time)
+	return segment.evaluate(motionData.points, time, segment.basePointIndex)
 end
 
----@class L2DF.Motion:L2DF.AMotion
+---@class L2DF.Motion: L2DF.AMotion
+---@field public sourceFrameRate number
+---@field public loopDurationSeconds number
+---@field public isLoop boolean
+---@field public isLoopFadeIn boolean
+---@field public lastWeight number
+---@field public motionData L2DF.MotionData
+---@field public eyeBlinkParameterIds string[]
+---@field public lipSyncParameterIds string[]
+---@field public modelCurveIdEyeBlink string
+---@field public modelCurveIdLipSync string
 local Motion = Luaoop.class("L2DF.Motion", AMotion)
 
 local EffectNameEyeBlink = "EyeBlink"
@@ -85,8 +115,8 @@ function Motion:__construct()
 	AMotion.__construct(self)
 	self.sourceFrameRate = 30
 	self.loopDurationSeconds = -1
-	self.isLoop = false
-	self.isLoopFadeIn = true
+	self.loop = false
+	self.loopFadeIn = true
 	self.lastWeight = 0
 	self.motionData = nil
 	self.eyeBlinkParameterIds = {}
@@ -95,20 +125,32 @@ function Motion:__construct()
 	self.modelCurveIdLipSync = nil
 end
 
+---@param jsondata string
+---@return L2DF.Motion
 function Motion.create(jsondata)
+	---@type L2DF.Motion
 	local motion = Motion()
 
+	motion:parse(jsondata)
+
+	motion.sourceFrameRate = motion.motionData.fps
+	motion.loopDurationSeconds = motion.motionData.duration
+	return motion
+end
+
+---@param jsondata string
+function Motion:parse(jsondata)
 	-- Parse motion
+	---@type L2DF.MotionJson
 	local json = MotionJson(jsondata)
 
+	---@type L2DF.MotionData
 	local motionData = MotionData()
 	motionData.duration = json:getMotionDuration()
 	motionData.loop = json:isMotionLoop()
 	motionData.fps = json:getMotionFps()
 
-	motion.motionData = MotionData()
-	motion.sourceFrameRate = motionData.fps
-	motion.loopDurationSeconds = motionData.duration
+	self.motionData = motionData
 
 	-- pre-allocate stuff
 
@@ -134,24 +176,23 @@ function Motion.create(jsondata)
 
 	if json:hasMotionFadeInTime() then
 		local v = json:getMotionFadeInTime()
-		motion.fadeInSeconds = v < 0 and 1 or v
+		self.fadeInSeconds = v < 0 and 1 or v
 	else
-		motion.fadeInSeconds = 1
+		self.fadeInSeconds = 1
 	end
 
 	if json:hasMotionFadeOutTime() then
 		local v = json:getMotionFadeOutTime()
-		motion.fadeOutSeconds = v < 0 and 1 or v
+		self.fadeOutSeconds = v < 0 and 1 or v
 	else
-		motion.fadeOutSeconds = 1
+		self.fadeOutSeconds = 1
 	end
 
 	local totalPointCount = 0
 	local totalSegmentCount = 0
 
-	for i = 1, motionData.curveCount do
+	for i, curve in ipairs(motionData.curves) do
 		local target = json:getMotionCurveTarget(i)
-		local curve = motionData.curves[i]
 
 		if target == TargetNameModel then
 			curve.type = "model"
@@ -228,24 +269,27 @@ function Motion.create(jsondata)
 		end
 	end
 
-	for i = 1, json:getEventCount() do
-        motionData.events[i].fireTime = json:getEventTime(i)
-        motionData.events[i].value = json:getEventValue(i)
+	for i, event in ipairs(motionData.events) do
+        event.fireTime = json:getEventTime(i)
+        event.value = json:getEventValue(i)
 	end
-
-	return motion
 end
 
 function Motion:getDuration()
-	return self.isLoop and -1 or self.loopDurationSeconds
+	return self.loop and -1 or self.loopDurationSeconds
 end
 
+---@param model L2DF.Model
+---@param userTimeSeconds number
+---@param weight number
+---@param motionQueueEntry L2DF.MotionQueueEntry
 function Motion:_doUpdateParameters(model, userTimeSeconds, weight, motionQueueEntry)
 	self.modelCurveIdEyeBlink = self.modelCurveIdEyeBlink or EffectNameEyeBlink
 	self.modelCurveIdLipSync = self.modelCurveIdLipSync or EffectNameLipSync
 
 	local timeOffsetSeconds = math.max(userTimeSeconds - motionQueueEntry:getStartTime(), 0)
 	local lipSyncValue, eyeBlinkValue = math.huge, math.huge
+	---@type number[]
 	local lipSyncFlags, eyeBlinkFlags = {}, {}
 
 	--[[
@@ -266,7 +310,7 @@ function Motion:_doUpdateParameters(model, userTimeSeconds, weight, motionQueueE
 	local time = timeOffsetSeconds
 
 	-- 'Repeat' time as necessary.
-	if self.isLoop then
+	if self.loop then
 		time = time % self.motionData.duration
 	end
 
@@ -314,14 +358,151 @@ function Motion:_doUpdateParameters(model, userTimeSeconds, weight, motionQueueE
 					end
 				end
 
-				local v = 0
-				-- TODO complete
+				local v ---@type number
+
+				if curve.fadeInTime < 0 and curve.fadeOutTime < 0 then
+					v = sourceValue + (value - sourceValue) * weight
+				else
+					---@type number
+					local fin, fout
+
+					if curve.fadeInTime < 0 then
+						fin = tmpFadeIn
+					else
+						fin = curve.fadeInTime == 0 and 1 or
+							KMath.getEasingSine((userTimeSeconds - motionQueueEntry:getFadeInStartTime()) / curve.fadeInTime)
+					end
+
+					if curve.fadeOutTime < 0 then
+						fout = tmpFadeOut
+					else
+						fout = curve.fadeOutTime == 0 and 1 or
+							KMath.getEasingSine((motionQueueEntry:getEndTime() - userTimeSeconds) / curve.fadeOutTime)
+					end
+
+					v = sourceValue + (value - sourceValue) * self.weight * fin * fout
+				end
+
+				model:setParameterValue(parameterIndex, v)
 			end
-		else
-			break
+		elseif curve.type == "partopacity" then
+			-- Find parameter index.
+			local parameterIndex = model:getParameterIndex(curve.id)
+
+			if parameterIndex >= 0 then
+				model:setParameterValue(parameterIndex, evaluateCurve(self.motionData, c, time))
+			end
 		end
 	end
 
+	if eyeBlinkValue ~= math.huge then
+		for _, i in ipairs(eyeBlinkFlags) do
+			local sourceValue = model:getParameterValue(i)
+			model:setParameterValue(i, sourceValue + (eyeBlinkValue - sourceValue) * weight)
+		end
+	end
+
+	if lipSyncValue ~= math.huge then
+		for _, i in ipairs(lipSyncFlags) do
+			local sourceValue = model:getParameterValue(i)
+			model:setParameterValue(i, sourceValue + (lipSyncValue - sourceValue) * weight)
+		end
+	end
+end
+
+---@param parameterId string
+---@param value number
+function Motion:setParameterFadeInTime(parameterId, value)
+	for _, curve in ipairs(self.motionData.curves) do
+		if curve.id == parameterId then
+			curve.fadeInTime = value
+			break
+		end
+	end
+end
+
+---@param parameterId string
+---@param value number
+function Motion:setParameterFadeOutTime(parameterId, value)
+	for _, curve in ipairs(self.motionData.curves) do
+		if curve.id == parameterId then
+			curve.fadeOutTime = value
+			break
+		end
+	end
+end
+
+---@param parameterId string
+function Motion:getParameterFadeInTime(parameterId)
+	for _, curve in ipairs(self.motionData.curves) do
+		if curve.id == parameterId then
+			return curve.fadeInTime
+		end
+	end
+
+	return -1
+end
+
+---@param parameterId string
+function Motion:getParameterFadeOutTime(parameterId)
+	for _, curve in ipairs(self.motionData.curves) do
+		if curve.id == parameterId then
+			return curve.fadeOutTime
+		end
+	end
+
+	return -1
+end
+
+function Motion:isLoop()
+	return self.loop
+end
+
+function Motion:setLoop(loop)
+	self.loop = not(not(loop))
+end
+
+function Motion:isLoopFadeIn()
+	return self.loopFadeIn
+end
+
+function Motion:setLoopFadeIn(loop)
+	self.loopFadeIn = not(not(loop))
+end
+
+function Motion:getLoopDuration()
+	return self.loopDurationSeconds
+end
+
+---@param eyeBlinkParams string[]
+---@param lipSyncParams string[]
+function Motion:setEffectIDs(eyeBlinkParams, lipSyncParams)
+	self.eyeBlinkParameterIds = {}
+	self.lipSyncParameterIds = {}
+
+	for i = 1, #eyeBlinkParams do
+		self.eyeBlinkParameterIds[i] = eyeBlinkParams[i]
+	end
+
+	for i = 1, #lipSyncParams do
+		self.lipSyncParameterIds[i] = lipSyncParams[i]
+	end
+end
+
+function Motion:getFiredEvent(beforeCheckTimeSeconds, motionTimeSeconds)
+	local i = 1
+
+	for _, event in ipairs(self.motionData.events) do
+		if event.fireTime > beforeCheckTimeSeconds and event.fireTime < motionTimeSeconds then
+			self.firedEventValues[i] = event.value
+		end
+	end
+
+	for j = i, #self.firedEventValues do
+		self.firedEventValues[j] = nil
+	end
+
+	return self.firedEventValues
 end
 
 return Motion
