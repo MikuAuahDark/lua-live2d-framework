@@ -96,10 +96,10 @@ end
 ---@field public isLoopFadeIn boolean
 ---@field public lastWeight number
 ---@field public motionData L2DF.MotionData
----@field public eyeBlinkParameterIds string[]
----@field public lipSyncParameterIds string[]
----@field public modelCurveIdEyeBlink string
----@field public modelCurveIdLipSync string
+---@field public eyeBlinkParameterIDs string[]
+---@field public lipSyncParameterIDs string[]
+---@field public modelCurveIDEyeBlink string
+---@field public modelCurveIDLipSync string
 local Motion = Luaoop.class("L2DF.Motion", AMotion)
 
 local EffectNameEyeBlink = "EyeBlink"
@@ -116,10 +116,10 @@ function Motion:__construct()
 	self.loopFadeIn = true
 	self.lastWeight = 0
 	self.motionData = nil
-	self.eyeBlinkParameterIds = {}
-	self.lipSyncParameterIds = {}
-	self.modelCurveIdEyeBlink = nil
-	self.modelCurveIdLipSync = nil
+	self.eyeBlinkParameterIDs = {}
+	self.lipSyncParameterIDs = {}
+	self.modelCurveIDEyeBlink = nil
+	self.modelCurveIDLipSync = nil
 end
 
 ---@param jsondata string
@@ -199,7 +199,7 @@ function Motion:parse(jsondata)
 			curve.type = "partopacity"
 		end
 
-		curve.id = json:getMotionCurveId(i)
+		curve.id = json:getMotionCurveID(i)
 		curve.baseSegmentIndex = totalSegmentCount + 1
 		curve.fadeInTime = json:hasMotionCurveFadeInTime(i) and json:getMotionCurveFadeInTime(i) or -1
 		curve.fadeOutTime = json:hasMotionCurveFadeOutTime(i) and json:getMotionCurveFadeOutTime(i) or -1
@@ -281,8 +281,8 @@ end
 ---@param weight number
 ---@param motionQueueEntry L2DF.MotionQueueEntry
 function Motion:_doUpdateParameters(model, userTimeSeconds, weight, motionQueueEntry)
-	self.modelCurveIdEyeBlink = self.modelCurveIdEyeBlink or EffectNameEyeBlink
-	self.modelCurveIdLipSync = self.modelCurveIdLipSync or EffectNameLipSync
+	self.modelCurveIDEyeBlink = self.modelCurveIDEyeBlink or EffectNameEyeBlink
+	self.modelCurveIDLipSync = self.modelCurveIDLipSync or EffectNameLipSync
 
 	local timeOffsetSeconds = math.max(userTimeSeconds - motionQueueEntry:getStartTime(), 0)
 	local lipSyncValue, eyeBlinkValue = math.huge, math.huge
@@ -290,12 +290,12 @@ function Motion:_doUpdateParameters(model, userTimeSeconds, weight, motionQueueE
 	local lipSyncFlags, eyeBlinkFlags = {}, {}
 
 	--[[
-	if #self.eyeBlinkParameterIds > MaxTargetSize then
-		-- log("too many eye blink targets "..#self.eyeBlinkParameterIds)
+	if #self.eyeBlinkParameterIDs > MaxTargetSize then
+		-- log("too many eye blink targets "..#self.eyeBlinkParameterIDs)
 	end
 
-	if #self.lipSyncParameterIds > MaxTargetSize then
-		-- log("too many eye blink targets "..#self.eyeBlinkParameterIds)
+	if #self.lipSyncParameterIDs > MaxTargetSize then
+		-- log("too many eye blink targets "..#self.lipSyncParameterIDs)
 	end
 	]]
 
@@ -320,9 +320,9 @@ function Motion:_doUpdateParameters(model, userTimeSeconds, weight, motionQueueE
 			-- Evaluate curve and call handler.
 			local value = evaluateCurve(self.motionData, c, time)
 
-			if curve.id == self.modelCurveIdEyeBlink then
+			if curve.id == self.modelCurveIDEyeBlink then
 				eyeBlinkValue = value
-			elseif curve.id == self.modelCurveIdLipSync then
+			elseif curve.id == self.modelCurveIDLipSync then
 				lipSyncValue = value
 			end
 		elseif curve.type == "parameter" then
@@ -336,7 +336,7 @@ function Motion:_doUpdateParameters(model, userTimeSeconds, weight, motionQueueE
 				local value = evaluateCurve(self.motionData, c, time)
 
 				if eyeBlinkValue ~= math.huge then
-					for i, eyeParam in ipairs(self.eyeBlinkParameterIds) do
+					for i, eyeParam in ipairs(self.eyeBlinkParameterIDs) do
 						if eyeParam == curve.id then
 							value = value * eyeBlinkValue
 							eyeBlinkFlags[#eyeBlinkFlags + 1] = i
@@ -346,7 +346,7 @@ function Motion:_doUpdateParameters(model, userTimeSeconds, weight, motionQueueE
 				end
 
 				if lipSyncValue ~= math.huge then
-					for i, lipSync in ipairs(self.lipSyncParameterIds) do
+					for i, lipSync in ipairs(self.lipSyncParameterIDs) do
 						if lipSync == curve.id then
 							value = value + lipSyncValue
 							lipSyncFlags[#lipSyncFlags + 1] = i
@@ -474,15 +474,15 @@ end
 ---@param eyeBlinkParams string[]
 ---@param lipSyncParams string[]
 function Motion:setEffectIDs(eyeBlinkParams, lipSyncParams)
-	self.eyeBlinkParameterIds = {}
-	self.lipSyncParameterIds = {}
+	self.eyeBlinkParameterIDs = {}
+	self.lipSyncParameterIDs = {}
 
 	for i = 1, #eyeBlinkParams do
-		self.eyeBlinkParameterIds[i] = eyeBlinkParams[i]
+		self.eyeBlinkParameterIDs[i] = eyeBlinkParams[i]
 	end
 
 	for i = 1, #lipSyncParams do
-		self.lipSyncParameterIds[i] = lipSyncParams[i]
+		self.lipSyncParameterIDs[i] = lipSyncParams[i]
 	end
 end
 

@@ -88,7 +88,7 @@ function MotionJson:getMotionCurveTarget(index)
 end
 
 ---@param index number
-function MotionJson:getMotionCurveId(index)
+function MotionJson:getMotionCurveID(index)
 	local p = self.curves[index]
 	return p and tostring(p[Id] or "") or ""
 end
