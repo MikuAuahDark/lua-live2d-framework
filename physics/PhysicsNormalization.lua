@@ -4,7 +4,7 @@ local Luaoop = require(path..".3p.Luaoop")
 ---@class L2DF.PhysicsNormalization
 ---@field public minimum number
 ---@field public maximum number
----@field public default number 
+---@field public default number
 local PhysicsNormalization = Luaoop.class("L2DF.PhysicsNormalization")
 
 function PhysicsNormalization:__construct()
