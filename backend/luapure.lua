@@ -39,7 +39,7 @@ local tableConstructorMt = {
 	end
 }
 
-local LuaBackend = Luaoop.class("Kareni.LuaBackend", BackendBase)
+local LuaBackend = Luaoop.class("Backend.Lua51", BackendBase)
 
 -- luacheck: push ignore self
 

@@ -22,7 +22,7 @@
 local path = (...):sub(1, #(...) - #(".backend.base"))
 local Luaoop = require(path..".3p.Luaoop")
 
-local BackendBase = Luaoop.class("Kareni.BackendBase")
+local BackendBase = Luaoop.class("Backend.Base")
 
 -- luacheck: no unused args
 

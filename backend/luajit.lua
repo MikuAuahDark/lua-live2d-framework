@@ -115,7 +115,7 @@ local function KVec2ToNVec(kv2)
 	return nvec(kv2.x, kv2.y)
 end
 
-local LJBackend = Luaoop.class("Kareni.LuaJITBackend", BackendBase)
+local LJBackend = Luaoop.class("Backend.LuaJIT", BackendBase)
 
 -- luacheck: push ignore self
 
