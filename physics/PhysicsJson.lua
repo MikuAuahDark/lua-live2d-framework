@@ -69,7 +69,7 @@ function PhysicsJson:getWind()
 end
 
 ---@return number
-function PhysicsJson:getSubRingCount()
+function PhysicsJson:getSubRigCount()
 	return assert(tonumber(self.meta[PhysicsSettingCount]))
 end
 
