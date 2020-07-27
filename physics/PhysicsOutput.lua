@@ -18,7 +18,7 @@ local PhysicsParameter = require(path..".physics.PhysicsParameter") ---@type L2D
 ---@field public angleScale number
 ---@field public weight number
 ---@field public type L2DF.PhysicsSource
----@field public reflect number
+---@field public reflect boolean
 ---@field public valueBelowMinimum number
 ---@field public valueExceededMaximum number
 ---@field public getValue L2DF.PhysicsValueGetter
@@ -33,7 +33,7 @@ function PhysicsOutput:__construct()
 	self.angleScale = 0
 	self.weight = 0
 	self.type = "x"
-	self.reflect = 0
+	self.reflect = false
 	self.valueBelowMinimum = 0
 	self.valueExceededMaximum = 0
 	self.getValue = nil

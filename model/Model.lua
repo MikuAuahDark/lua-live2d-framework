@@ -27,6 +27,10 @@ function Model:update()
 	return Backend:updateModel(self.model)
 end
 
+function Model:getModel()
+	return self.model
+end
+
 ---@return number
 function Model:getCanvasWidth()
 	return (Backend:getModelDimensions(self.model))

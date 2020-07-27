@@ -23,7 +23,7 @@ lua-live2d-framework:
 
 * `Model:getDrawableBlendMode` returns 2 strings, which maps to LOVE [BlendMode](https://love2d.org/wiki/BlendMode) and [BlendAlphaMode](https://love2d.org/wiki/BlendAlphaMode) respectively.
 
-* `CubismModel::GetModel` equivalent does not exist.
+* `CubismModel::GetModel` returns backend-specific model object.
 
 * `CubismMoc` equivalent class does not exist. Moc data string is passed directly to `Model` object constructor.
 

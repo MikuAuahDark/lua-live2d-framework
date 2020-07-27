@@ -198,6 +198,12 @@ end
 
 ---@param i number
 ---@param j number
+function PhysicsJson:getOutputType(i, j)
+	return tostring(assert(self.setting[i][Output][j][Type]))
+end
+
+---@param i number
+---@param j number
 ---@return boolean
 function PhysicsJson:getOutputReflect(i, j)
 	return not(not(self.setting[i][Output][j][Reflect]))
@@ -242,7 +248,7 @@ end
 
 ---@param i number
 ---@param j number
-function PhysicsJson:getParticleRadius(i, j)
+function PhysicsJson:getParticlePosition(i, j)
 	return nvec(
 		assert(tonumber(self.setting[i][Vertices][j][Position][X])),
 		assert(tonumber(self.setting[i][Vertices][j][Position][Y]))

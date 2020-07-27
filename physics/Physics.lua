@@ -6,6 +6,7 @@ local KMath = require(path..".math.Math") ---@type L2DF.Math
 
 local PhysicsInput = require(path..".physics.PhysicsInput") ---@type L2DF.PhysicsInput
 local PhysicsJson = require(path..".physics.PhysicsJson") ---@type L2DF.PhysicsJson
+local PhysicsOutput = require(path..".physics.PhysicsOutput") ---@type L2DF.PhysicsOutput
 local PhysicsParticle = require(path..".physics.PhysicsParticle") ---@type L2DF.PhysicsParticle
 local PhysicsRig = require(path..".physics.PhysicsRig") ---@type L2DF.PhysicsRig
 local PhysicsSubRig = require(path..".physics.PhysicsSubRig") ---@type L2DF.PhysicsSubRig
@@ -302,7 +303,7 @@ function Physics:parse(jsondata)
 	physicsRig.wind = json:getWind()
 
 	local subRigCount = json:getSubRigCount()
-	local inputIndex, outputIndex = 1, 1
+	local inputIndex, outputIndex, particleIndex = 1, 1, 1
 
 	for i = 1, subRigCount do
 		local setting = PhysicsSubRig()
@@ -349,9 +350,91 @@ function Physics:parse(jsondata)
 		setting.baseOutputIndex = outputIndex
 
 		for j = 1, setting.outputCount do
-			-- TODO
+			local output = PhysicsOutput()
+			physicsRig.outputs[outputIndex + j - 1] = output
+			-- TODO: Remove assert?
+			assert(#physicsRig.outputs == outputIndex + j - 1)
+
+			output.destinationParameterIndex = -1
+			output.vertexIndex = json:getOutputVertexIndex(i, j)
+			output.angleScale = json:getOutputAngleScale(i, j)
+			output.weight = json:getOutputWeight(i, j)
+			output.destination.id = json:getOutputDestinationID(i, j)
+			output.reflect = json:getOutputReflect(i, j)
+
+			local outputType = json:getOutputType(i, j)
+
+			if outputType == PhysicsTypeTagX then
+				output.type = "x"
+				output.getValue = getOutputTranslationX
+				output.getScale = getOutputScaleTranslationX
+			elseif outputType == PhysicsTypeTagY then
+				output.type = "y"
+				output.getValue = getOutputTranslationY
+				output.getScale = getOutputScaleTranslationY
+			elseif outputType == PhysicsTypeTagAngle then
+				output.type = "angle"
+				output.getValue = getOutputAngle
+				output.getScale = getOutputScaleAngle
+			end
+		end
+
+		outputIndex = outputIndex + setting.outputCount
+
+		-- Particle
+		setting.particleCount = json:getParticleCount(i)
+		setting.baseParticleIndex = particleIndex
+
+		for j = 1, setting.particleCount do
+			local particle = PhysicsParticle()
+			physicsRig.particles[particleIndex + j - 1] = particle
+			-- TODO: Remove assert?
+			assert(#physicsRig.particles == particleIndex + j - 1)
+
+			particle.mobility = json:getParticleMobility(i, j)
+			particle.delay = json:getParticleDelay(i, j)
+			particle.acceleration = json:getParticleAcceleration(i, j)
+			particle.radius = json:getParticleRadius(i, j)
+			particle.position = json:getParticlePosition(i, j)
+		end
+
+		particleIndex = particleIndex + setting.particleCount
+	end
+
+	return self:initialize()
+end
+
+function Physics:initialize()
+	local strand = self.physicsRig.particles
+
+	for i, v in ipairs(self.physicsRig.settings) do
+		local st0 = strand[v.baseParticleIndex]
+
+		-- Initialize the top of particle.
+		st0.initialPosition = nvec()
+		st0.lastPosition = nvec()
+		st0.lastGravity = nvec(0, 1)
+		st0.velocity = nvec()
+		st0.force = nvec()
+
+		-- Initialize paritcles.
+		for j = 2, v.particleCount do
+			local st = strand[v.baseParticleIndex + j - 1]
+
+			st.initialPosition = strand[v.baseParticleIndex + j - 2].initialPosition + nvec(0, st.radius)
+			st.position = st.initialPosition:clone()
+			st.lastPosition = st.initialPosition:clone()
+			st.lastGravity = nvec(0, 1)
+			st.velocity = nvec()
+			st.force = nvec()
 		end
 	end
+end
+
+---@param model L2DF.Model
+---@param dt number
+function Physics:evaluate(model, dt)
+	-- TODO
 end
 
 return Physics
