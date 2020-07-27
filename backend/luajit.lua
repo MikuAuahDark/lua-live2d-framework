@@ -331,12 +331,12 @@ end
 
 function LJBackend:getModelDrawableVertexMapCount(model, index)
 	assert(index > 0 and index <= #model.drawNames, "model drawable index out of bounds")
-	return model.drawIndexMapCount[index - 1] - 1
+	return model.drawIndexMapCount[index - 1]
 end
 
 function LJBackend:getModelDrawableVertexCount(model, index)
 	assert(index > 0 and index <= #model.drawNames, "model drawable index out of bounds")
-	return model.drawVertexCount[index - 1] - 1
+	return model.drawVertexCount[index - 1]
 end
 
 function LJBackend:getModelDrawableVertex(model, index, cast)
@@ -377,7 +377,7 @@ end
 function LJBackend:getModelDrawableClips(model, index)
 	assert(index > 0 and index <= #model.drawNames, "model drawable index out of bounds")
 	if model.drawClipCount[index - 1] > 0 then
-		return model.drawClips[index]
+		return model.drawClips[index - 1]
 	else
 		return nil
 	end

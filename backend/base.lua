@@ -22,6 +22,7 @@
 local path = (...):sub(1, #(...) - #(".backend.base"))
 local Luaoop = require(path..".3p.Luaoop")
 
+---@class Backend.Base
 local BackendBase = Luaoop.class("Backend.Base")
 
 -- luacheck: no unused args
@@ -39,96 +40,155 @@ function BackendBase:allocateStruct(typedef)
 	error("pure virtual method 'allocateStruct'")
 end
 
--- Returns backend-defined object for models
+--- Returns backend-defined object for models
+---@param str string
+---@return userdata
 function BackendBase:loadModel(str)
 	error("pure virtual method 'loadModel'")
 end
 
+---@param model userdata
 function BackendBase:updateModel(model)
 	error("pure virtual method 'update'")
 end
 
+---@param model userdata
 function BackendBase:getModelDimensions(model)
 	error("pure virtual method 'getModelDimensions'")
 end
 
+---@param model userdata
 function BackendBase:getModelPartCount(model)
 	error("pure virtual method 'getModelPartCount'")
 end
 
--- 1-based index of model part, -length on not found
+--- 1-based index of model part, -length on not found
+---@param model userdata
+---@param name string
+---@return number
 function BackendBase:getModelPartIndex(model, name)
 	error("pure virtual method 'getModelPartIndex'")
 end
 
+---@param model userdata
+---@param index number
+---@return number
 function BackendBase:getModelPartOpacity(model, index)
 	error("pure virtual method 'getModelPartOpacity'")
 end
 
+---@param model userdata
+---@param index number
+---@param value number
 function BackendBase:setModelPartOpacity(model, index, value)
 	error("pure virtual method 'setModelPartOpacity'")
 end
 
+---@param model userdata
 function BackendBase:getModelParameterCount(model)
 	error("pure virtual method 'getModelParameterCount'")
 end
 
+---@param model userdata
+---@param name string
 function BackendBase:getModelParameterIndex(model, name)
 	error("pure virtual method 'getModelParameterIndex'")
 end
 
+---@param model userdata
+---@param index number
+---@return number
 function BackendBase:getModelParameterValue(model, index)
 	error("pure virtual method 'getModelParameterValue'")
 end
 
+---@param model userdata
+---@param index number
+---@param value number
 function BackendBase:setModelParameterValue(model, index, value)
 	error("pure virtual method 'setModelParameterValue'")
 end
 
+---@param model userdata
+---@return string[]
 function BackendBase:getModelDrawableNames(model)
 	error("pure virtual method 'getModelDrawableNames'")
 end
 
+---@param model userdata
+---@return number
 function BackendBase:getModelDrawableRenderOrders(model)
 	error("pure virtual method 'getModelDrawableRenderOrders'")
 end
 
+---@param model userdata
+---@return number
 function BackendBase:getModelDrawableTextureIndex(model)
 	error("pure virtual method 'getModelDrawableTextureIndex'")
 end
 
+---@param model userdata
+---@param index number
+---@return number
 function BackendBase:getModelDrawableVertexMapCount(model, index)
 	error("pure virtual method 'getModelDrawableVertexMapCount'")
 end
 
+---@param model userdata
+---@param index number
+---@return number
 function BackendBase:getModelDrawableVertexCount(model, index)
 	error("pure virtual method 'getModelDrawableVertexCount'")
 end
 
+---@param model userdata
+---@param index number
+---@param cast boolean
+---@return NVec[]|number[]
 function BackendBase:getModelDrawableVertex(model, index, cast)
 	error("pure virtual method 'getModelDrawableVertex'")
 end
 
+---@param model userdata
+---@param index number
+---@return number[]
 function BackendBase:getModelDrawableVertexMap(model, index)
 	error("pure virtual method 'getModelDrawableVertexMap'")
 end
 
+---@param model userdata
+---@param index number
+---@return NVec[]
 function BackendBase:getModelDrawableUV(model, index)
 	error("pure virtual method 'getModelDrawableUV'")
 end
 
+---@param model userdata
+---@param index number
+---@return number
 function BackendBase:getModelDrawableOpacity(model, index)
 	error("pure virtual method 'getModelDrawableOpacity'")
 end
 
+---@param model userdata
+---@param index number
+---@param flag number
+---@return boolean
 function BackendBase:getModelDrawableFlagsSet(model, index, flag)
 	error("pure virtual method 'getModelDrawableFlagsSet'")
 end
 
+---@param model userdata
+---@param index number
+---@param flag number
+---@return boolean
 function BackendBase:getModelDrawableDynFlagsSet(model, index, flag)
 	error("pure virtual method 'getModelDrawableDynFlagsSet'")
 end
 
+---@param model userdata
+---@param index number
+---@return number[]
 function BackendBase:getModelDrawableClips(model, index)
 	error("pure virtual method 'getModelDrawableClips'")
 end
