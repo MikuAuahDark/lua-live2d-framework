@@ -31,15 +31,6 @@ function BackendBase:__construct()
 	error("pure virtual method 'BackendBase'")
 end
 
-function BackendBase:allocateArray(type, size)
-	error("pure virtual method 'allocateArray'")
-end
-
--- Format: {{type1, name1}, {type2, name2}, ...}
-function BackendBase:allocateStruct(typedef)
-	error("pure virtual method 'allocateStruct'")
-end
-
 --- Returns backend-defined object for models
 ---@param str string
 ---@return userdata

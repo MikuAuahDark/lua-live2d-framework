@@ -122,17 +122,8 @@ function Model:getParameterIndex(name)
 		local notExistLength = #self.notExistParam
 		local object = {
 			name,
-			Backend:allocateStruct({
-				{"double", "value"},
-				{"double", "minValue"},
-				{"double", "maxValue"},
-				{"double", "defValue"}
-			})
+			{value = 0, minValue = -math.huge, maxValue = math.huge, defValue = 0}
 		}
-		object[2].value = 0
-		object[2].minValue = -math.huge
-		object[2].maxValue = math.huge
-		object[2].defValue = 0
 		index = notExistLength + self.partCount + 1
 		self.notExistParam[notExistLength + 1] = object
 	end

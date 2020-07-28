@@ -123,24 +123,6 @@ function LJBackend:__construct()
 	self.objectCache = {}
 end
 
-function LJBackend:allocateStruct(typedef)
-	local structdef = {"struct {"}
-
-	for i = 1, #typedef do
-		local info = typedef[i]
-		structdef[i + 1] = string.format("%s %s;", info[1], info[2])
-	end
-
-	local structString = table.concat(structdef)
-	if self.objectCache[structString] then
-		return self.objectCache[structString]()
-	else
-		local objectConstructor = ffi.typeof(structString)
-		self.objectCache[structString] = objectConstructor
-		return objectConstructor()
-	end
-end
-
 function LJBackend:allocateArray(type, size)
 	return ffi.new(type, size + 1) -- Lua arrays start at 1
 end

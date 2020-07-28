@@ -47,20 +47,6 @@ function LuaBackend:__construct()
 	self.tableConstructor = setmetatable({}, tableConstructorMt)
 end
 
-function LuaBackend:allocateStruct(typedef)
-	local t = {}
-
-	for i = 1, #typedef do
-		t[typedef[i][2]] = 0
-	end
-
-	return t
-end
-
-function LuaBackend:allocateArray(_, size)
-	return self.tableConstructor[size]()
-end
-
 function LuaBackend:loadModel(modelString)
 	local model = live2d.loadModelFromString(modelString)
 	local width, height, centerX, centerY, pixelPerUnit = model:readCanvasInfo()
