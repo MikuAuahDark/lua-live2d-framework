@@ -12,7 +12,7 @@ local PhysicsParameter = require(path..".physics.PhysicsParameter") ---@type L2D
 ---@field public sourceParameterIndex number
 ---@field public weight number
 ---@field public type L2DF.PhysicsSource
----@field public reflect number
+---@field public reflect boolean
 ---@field public getNormalizedParameterValue L2DF.NormalizedPhysicsParameterValueGetter
 local PhysicsInput = Luaoop.class("L2DF.PhysicsInput")
 
@@ -21,6 +21,6 @@ function PhysicsInput:__construct()
 	self.sourceParameterIndex = 0
 	self.weight = 0
 	self.type = "x"
-	self.reflect = 0
+	self.reflect = false
 	self.getNormalizedParameterValue = nil
 end

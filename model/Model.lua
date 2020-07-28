@@ -1,7 +1,8 @@
 local path = (...):sub(1, #(...) - #(".model.Model"))
 local Luaoop = require(path..".3p.Luaoop")
-local Backend = require(path..".backend")
-local KMath = require(path..".math.Math")
+
+local Backend = require(path..".backend") ---@type Backend.Base
+local KMath = require(path..".math.Math") ---@type L2DF.Math
 
 ---@class L2DF.Model
 local Model = Luaoop.class("L2DF.Model")
@@ -208,6 +209,24 @@ function Model:getParameterValue(index)
 		end
 	elseif t == "string" then
 		return Model:getParameterValue(self:getParameterIndex(index))
+	end
+end
+
+function Model:getAllParameterValue(index)
+	local t = type(index)
+
+	if t == "number" then
+		if index > self.paramCount then
+			if self.notExistParam[index - self.partCount] then
+				return self.notExistParam[index - self.partCount][2].value
+			else
+				return nil
+			end
+		else
+			return Backend:getModelParameterValue(self.model, index)
+		end
+	elseif t == "string" then
+		return Model:getAllParameterValue(self:getParameterIndex(index))
 	end
 end
 

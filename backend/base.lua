@@ -88,7 +88,7 @@ end
 
 ---@param model userdata
 ---@param index number
----@return number
+---@return number,number,number,number
 function BackendBase:getModelParameterValue(model, index)
 	error("pure virtual method 'getModelParameterValue'")
 end

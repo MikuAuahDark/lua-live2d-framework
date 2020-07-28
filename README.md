@@ -31,6 +31,8 @@ lua-live2d-framework:
 
 * All `is*` or `has*` method doesn't accept additional value to set the value. Use `set*` function respectively to set it.
 
+* Addition of `Model:getAllParameterValue` which returns 4 values: current parameter value, min, max, and default value.
+
 Third-party Libraries
 ---------------------
 

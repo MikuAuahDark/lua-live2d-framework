@@ -179,26 +179,28 @@ end
 -- TODO: Optimize this function
 --- Updates particles.
 ---@param strand L2DF.PhysicsParticle[] Target array of particle.
+---@param i number
+---@param strandCount number Count of particle.
 ---@param totalTranslation NVec Total translation value.
 ---@param totalAngle number Total angle.
 ---@param windDirection NVec Direction of wind.
 ---@param thresholdValue number Threshold of movement.
 ---@param dt number Delta time.
 ---@param airResistance number Air resistance.
-local function updateParticles(strand, totalTranslation, totalAngle, windDirection, thresholdValue, dt, airResistance)
-	strand[1].position = totalTranslation
+local function updateParticles(strand, i, strandCount, totalTranslation, totalAngle, windDirection, thresholdValue, dt, airResistance)
+	strand[i].position = totalTranslation
 
 	local totalRadian = math.pi * totalAngle / 180
 	local currentGravity = KMath.radianToDirection(totalRadian):normalizeInplace()
 
-	for i = 2, #strand do
-		local st = strand[i]
+	for j = i + 1, i + strandCount do
+		local st = strand[j]
 
 		st.force = currentGravity * st.acceleration
 		st.lastPosition = st.position
 
 		local delay = st.delay * dt * 30
-		local direction = st.position - strand[i - 1].position
+		local direction = st.position - strand[j - 1].position
 		local radian = KMath.directionToRadian(st.lastGravity, currentGravity) / airResistance
 		local sinv = math.sin(radian)
 		local cosv = math.cos(radian)
@@ -211,15 +213,15 @@ local function updateParticles(strand, totalTranslation, totalAngle, windDirecti
 		]]
 		direction.x, direction.y = cosv * direction.x - direction.y * sinv, sinv * direction.x + direction.y * cosv
 
-		st.position = strand[i - 1].position + direction
+		st.position = strand[j - 1].position + direction
 
 		local velocity = st.velocity * delay
 		local force = st.force * delay * delay
 		st.position = st.position + velocity + force
 
-		local newDirection = (st.position - strand[i - 1].position):normalizeInplace()
+		local newDirection = (st.position - strand[j - 1].position):normalizeInplace()
 
-		st.position = strand[i - 1].position + newDirection * st.radius
+		st.position = strand[j - 1].position + newDirection * st.radius
 
 		if math.abs(st.position.x) < thresholdValue then
 			st.position.x = 0
@@ -325,6 +327,10 @@ function Physics:parse(jsondata)
 			physicsRig.inputs[inputIndex + j - 1] = input
 			-- TODO: Remove assert?
 			assert(#physicsRig.inputs == inputIndex + j - 1)
+
+			input.sourceParameterIndex = -1
+			input.weight = json:getInputWeight(i, j)
+			input.reflect = json:getInputReflect(i, j)
 
 			local inputType = json:getInputType(i, j)
 
@@ -434,7 +440,83 @@ end
 ---@param model L2DF.Model
 ---@param dt number
 function Physics:evaluate(model, dt)
-	-- TODO
+	local particles = self.physicsRig.particles
+
+	for i, setting in ipairs(self.physicsRig.settings) do
+		local totalAngle = 0
+		local totalTranslation = nvec()
+		local baseInputIndex = setting.baseInputIndex
+		local baseOutputIndex = setting.baseOutputIndex
+		local baseParticleIndex = setting.baseParticleIndex
+
+		-- Load input parameters
+		for j, input in ipairs(self.physicsRig.inputs) do
+			local weight = input.weight / MaximumWeight
+
+			if input.sourceParameterIndex == -1 then
+				input.sourceParameterIndex = model:getParameterIndex(input.source.id)
+			end
+
+			local pv, pmin, pmax, pdef = model:getAllParameterValue(input.sourceParameterIndex)
+			local a, b = input.getNormalizedParameterValue(
+				pv, pmin, pmax, pdef,
+				setting.normalizationPosition,
+				setting.normalizationAngle,
+				input.reflect,
+				weight
+			)
+			totalTranslation = totalTranslation + a
+			totalAngle = totalAngle + b
+		end
+
+		local radAngle = -totalAngle * math.pi / 180
+		local cosv = math.cos(radAngle)
+		local sinv = math.sin(radAngle)
+		-- Not sure if this is a mistake, really
+		-- TODO: Rectify this in the future
+		--[[
+		totalTranslation.x = cosv * totalTranslation.x - totalTranslation.y * sinv
+		totalTranslation.y = sinv * totalTranslation.x + totalTranslation.y * cosv
+		]]
+		totalTranslation.x, totalTranslation.y = cosv * totalTranslation.x - totalTranslation.y * sinv, sinv * totalTranslation.x + totalTranslation.y * cosv
+
+		-- Calculate particles position.
+		updateParticles(
+			self.physicsRig.particles,
+			baseParticleIndex,
+			setting.particleCount,
+			totalTranslation,
+			totalAngle,
+			self.options.wind,
+			MovementThreshold * setting.normalizationPosition.maximum,
+			dt,
+			AirResistance
+		)
+
+		-- Update output parameters.
+		for j, output in ipairs(self.physicsRig.outputs) do
+			local particleIndex = output.vertexIndex
+
+			if particleIndex < 1 or particleIndex >= setting.particleCount then
+				break
+			end
+
+			if output.destinationParameterIndex == -1 then
+				output.destinationParameterIndex = model:getParameterIndex(output.destination.id)
+			end
+
+			local translation = particles[baseParticleIndex + particleIndex].position - particles[baseParticleIndex + particleIndex - 1]
+			local outputValue = output.getValue(
+				translation,
+				particles,
+				baseParticleIndex + particleIndex,
+				output.reflect,
+				self.options.gravity
+			)
+
+			-- TODO
+		end
+	end
 end
 
 return Physics
